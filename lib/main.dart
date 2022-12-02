@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'second_screen.dart';
+import "second_screen.dart";
 
 //erörü gider sıkıntı clasta muhtemelen , inint metodunun calıstıgından emin ol ve create bastığında manuel girdiğin verileri terminae bastırsın sonra tecleri hallet
 // Create bastığında dosya bilgilerini gönderip create file methodunu Row da çalıştırsın
@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: MyHomePage(),
+      home: const MyHomePage(),
     );
   }
 }
@@ -23,19 +23,23 @@ class MyHomePage extends StatefulWidget {
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
-  // ignore: unused_element
-
 }
 
 class _MyHomePageState extends State<MyHomePage> {
   int fileId = 0;
   final todosList = ToDo.toDoList();
-  int fileNumber = 0;
+
   bool startNewFilescreen = false;
   TextEditingController fileTitleTEC = TextEditingController();
   TextEditingController fileDateTEC = TextEditingController();
   TextEditingController fileExplanationTEC = TextEditingController();
   TextEditingController fileDueDateTEC = TextEditingController();
+
+  void initState() {
+    super.initState();
+    fileDueDateTEC.text = "";
+    fileExplanationTEC.text = "";
+  }
 
   Widget buildFileScreen() => Container(
         color: Colors.blue,
@@ -94,8 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     fileDueDateTEC.text = "";
                   });
                 },
-                style: ElevatedButton.styleFrom(
-                    primary: Color.fromARGB(255, 147, 6, 147)),
+                style: ElevatedButton.styleFrom(primary: Colors.purple),
                 child: Text(
                   "Cancel",
                 ),
@@ -108,13 +111,14 @@ class _MyHomePageState extends State<MyHomePage> {
                   setState(() {
                     startNewFilescreen = false;
                     fileId++;
-                    if (fileDateTEC.text != "" && fileTitleTEC.text != "")
+                    if (fileDateTEC.text != "" && fileTitleTEC.text != "") {
                       (todosList.add(ToDo(
                           id: fileId.toString(),
                           title: fileTitleTEC.text,
                           date: fileDateTEC.text,
                           explanation: fileExplanationTEC.text,
                           dueDate: fileDueDateTEC.text)));
+                    }
                   });
                 },
                 style: ElevatedButton.styleFrom(primary: Colors.blue),
@@ -125,21 +129,19 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       );
 
-  Widget buildPlusButton() => CircleAvatar(
-      backgroundColor: Colors.blue,
-      child: IconButton(
-        padding: EdgeInsets.zero,
+  Widget buildPlusButton() => FloatingActionButton(
+        backgroundColor: Colors.blue,
+        shape: BeveledRectangleBorder(borderRadius: BorderRadius.zero),
         onPressed: () {
           setState(() {
             startNewFilescreen = true;
           });
         },
-        iconSize: 26,
-        icon: Icon(
+        child: const Icon(
           Icons.add,
-          color: Color.fromARGB(255, 255, 255, 255),
+          color: Colors.white,
         ),
-      ));
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -150,32 +152,35 @@ class _MyHomePageState extends State<MyHomePage> {
             child: AppBar(
                 elevation: 0,
                 title: const Text(
-                  "TO DO LISTS",
+                  "TO DO APP",
                   style: TextStyle(
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0,
-                    color: Color.fromARGB(255, 255, 255, 255),
-                  ),
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0,
+                      color: Colors.white),
                 ))),
         body: Center(
           child: Stack(
             children: [
-              Row(
-                children: [
-                  for (ToDo toDoo in todosList)
-                    ToDoItem(
-                      todo: toDoo,
-                      onToDoChange: toDoChange,
-                      onDeleteItem: deleteItem,
-                      onEdit: editItem,
-                    )
-                ],
-              ),
-              Align(alignment: Alignment(-1.0, -1.0), child: buildPlusButton()),
+              Scrollbar(
+                  isAlwaysShown: true,
+                  child: Wrap(
+                    direction: Axis.horizontal,
+                    children: [
+                      for (ToDo toDoo in todosList)
+                        ToDoItem(
+                            todo: toDoo,
+                            onToDoChange: toDoChange,
+                            onDeleteItem: deleteItem,
+                            onEdit: editItem)
+                    ],
+                  )),
+              Align(
+                  alignment: const Alignment(-1.0, -1.0),
+                  child: buildPlusButton()),
               if (startNewFilescreen == true)
                 (Align(
-                    alignment: Alignment(-1.0, -0.7),
+                    alignment: const Alignment(-1.0, -0.7),
                     child: buildFileScreen())),
             ],
           ),
@@ -206,19 +211,19 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class ToDo {
-  String? id;
-  String? title;
-  String? date;
-  String? explanation;
-  String? dueDate;
+  String id;
+  String title;
+  String date;
+  String explanation;
+  String dueDate;
   bool isDone;
 
   ToDo(
       {required this.id,
       required this.title,
       required this.date,
-      this.explanation,
-      this.dueDate,
+      required this.explanation,
+      required this.dueDate,
       this.isDone = false});
 
   static List<ToDo> toDoList() {
@@ -228,9 +233,10 @@ class ToDo {
 
 class ToDoItem extends StatelessWidget {
   final ToDo todo;
-  final onToDoChange;
-  final onDeleteItem;
-  final onEdit;
+
+  final Function onToDoChange;
+  final Function onDeleteItem;
+  final Function onEdit;
 
   ToDoItem(
       {super.key,
@@ -242,68 +248,59 @@ class ToDoItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Align(
-        alignment: Alignment(1.0, -0.8),
+        alignment: Alignment(-1.0, -0.8),
         child: Container(
-            margin: EdgeInsets.all(10),
-            color: Colors.white,
-            height: 100.0,
-            child: Center(
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          margin: EdgeInsets.all(10),
+          color: Colors.amber,
+          height: 100.0,
+          child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                IconButton(
+                    icon: Icon(
+                      todo.isDone
+                          ? Icons.check_box
+                          : Icons.check_box_outline_blank,
+                      color: Colors.blue,
+                    ),
+                    onPressed: () {
+                      onToDoChange(todo);
+                    }),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    IconButton(
-                        icon: Icon(
-                          todo.isDone
-                              ? Icons.check_box
-                              : Icons.check_box_outline_blank,
-                          color: Colors.blue,
-                        ),
-                        onPressed: () {
-                          onToDoChange(todo);
-                        }),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        CircleAvatar(
-                          backgroundColor: Color.fromARGB(255, 255, 255, 255),
-                          child: IconButton(
-                              padding: EdgeInsets.zero,
-                              onPressed: (() {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => SecondPage(
-                                              title_: todo.title,
-                                              date_: todo.date,
-                                              dueDate_: todo.dueDate,
-                                              explanation_: todo.explanation,
-                                              id_: todo.id,
-                                            )));
-                              }),
-                              iconSize: 27,
-                              icon: Icon(Icons.folder, color: Colors.blue)),
-                        ),
-                        Text(
-                          todo.title!,
-                          style: TextStyle(
-                              decoration: todo.isDone
-                                  ? TextDecoration.lineThrough
-                                  : null),
-                        ),
-                        Text(todo.date!)
-                      ],
+                    FloatingActionButton(
+                      backgroundColor: Color.fromARGB(255, 255, 255, 255),
+                      onPressed: (() {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    SecondPage(todoItem_: this)));
+                      }),
+                      child: const Icon((Icons.folder),
+                          color: Colors.blue, size: 25),
                     ),
-                    IconButton(
-                        icon: Icon(
-                          Icons.delete,
-                          color: Colors.red,
-                        ),
-                        onPressed: () {
-                          onDeleteItem(todo.id);
-                        }),
-                  ]),
-            )));
+                    Text(
+                      todo.title,
+                      style: TextStyle(
+                          decoration:
+                              todo.isDone ? TextDecoration.lineThrough : null),
+                    ),
+                    Text(todo.date)
+                  ],
+                ),
+                IconButton(
+                    icon: Icon(
+                      Icons.delete,
+                      color: Colors.red,
+                    ),
+                    onPressed: () {
+                      onDeleteItem(todo.id);
+                    }),
+              ]),
+        ));
   }
 }
